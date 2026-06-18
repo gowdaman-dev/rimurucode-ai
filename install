@@ -20,8 +20,8 @@ Options:
         --no-modify-path    Don't modify shell config files (.zshrc, .bashrc, etc.)
 
 Examples:
-    curl -fsSL https://raw.githubusercontent.com/gowdaman-dev/rimuru-ai/dev/install | bash
-    curl -fsSL https://raw.githubusercontent.com/gowdaman-dev/rimuru-ai/dev/install | bash -s -- --version 1.0.180
+    curl -fsSL https://raw.githubusercontent.com/gowdaman-dev/rimurucode-ai/main/install | bash
+    curl -fsSL https://raw.githubusercontent.com/gowdaman-dev/rimurucode-ai/main/install | bash -s -- --version 1.0.180
     ./install --binary /path/to/rimuru
 EOF
 }
@@ -446,7 +446,7 @@ fi
 
 install_configs() {
     local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/rimuru"
-    local config_url="https://raw.githubusercontent.com/gowdaman-dev/rimuru-ai/dev/rimuru-configs.tar.gz"
+    local config_url="https://raw.githubusercontent.com/gowdaman-dev/rimurucode-ai/main/rimuru-configs.tar.gz"
     local tmp_dir="${TMPDIR:-/tmp}/rimuru_config_$$"
     local tmp_config="$tmp_dir/configs.tar.gz"
 

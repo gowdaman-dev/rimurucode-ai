@@ -457,8 +457,8 @@ install_configs() {
     fi
 
     print_message info "\n${MUTED}Downloading default configs (agents, skills, commands)...${NC}"
+    mkdir -p "$config_dir" "$tmp_dir"
     if curl -fsSL -o "$tmp_config" "$config_url"; then
-        mkdir -p "$config_dir" "$tmp_dir"
         tar -xzf "$tmp_config" -C "$tmp_dir" 2>/dev/null || true
         if [ -d "$tmp_dir/.rimuru" ]; then
             cp -r "$tmp_dir/.rimuru"/* "$config_dir"/

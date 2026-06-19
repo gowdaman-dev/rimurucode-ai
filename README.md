@@ -29,7 +29,7 @@ curl -fsSL https://raw.githubusercontent.com/gowdaman-dev/rimurucode-ai/main/ins
 
 **PowerShell:**
 ```powershell
-irm https://raw.githubusercontent.com/gowdaman-dev/rimurucode-ai/main/install | iex
+irm https://raw.githubusercontent.com/gowdaman-dev/rimurucode-ai/main/install.ps1 | iex
 ```
 
 **Git Bash / WSL:**

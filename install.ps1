@@ -124,6 +124,8 @@ function Install-Binary {
   if (-not (Test-Path $exePath)) {
     $exePath = Get-ChildItem -Path $tmpDir -Recurse -Filter "rimuru*" | Select-Object -First 1 -ExpandProperty FullName
   }
+  # Stop any running rimuru process to avoid file lock
+  Get-Process "rimuru" -ErrorAction SilentlyContinue | Stop-Process -Force
   Copy-Item -Path $exePath -Destination "$installDir\rimuru.exe" -Force
   Remove-Item -Path $tmpDir -Recurse -Force
   Write-Host "Installed rimuru to: $installDir"

@@ -89,6 +89,9 @@ if (-not [string]::IsNullOrEmpty($binary)) {
 
 # Check if already installed
 $rimuruPath = Get-Command "rimuru" -ErrorAction SilentlyContinue
+if (-not $rimuruPath) {
+    $rimuruPath = Get-Command "rimuru.exe" -ErrorAction SilentlyContinue
+}
 if ($rimuruPath) {
   $installedVersion = & rimuru --version 2>$null
   if ($installedVersion -eq $specificVersion) {
@@ -125,13 +128,13 @@ function Install-Binary {
   if (-not (Test-Path $exePath)) {
     $exePath = Get-ChildItem -Path $tmpDir -Recurse -Filter "rimuru*" | Select-Object -First 1 -ExpandProperty FullName
   }
-  Move-Item -Path $exePath -Destination "$installDir\rimuru-ai.exe" -Force
+  Move-Item -Path $exePath -Destination "$installDir\rimuru.exe" -Force
   Remove-Item -Path $tmpDir -Recurse -Force
   Write-Message "info" "${MUTED}Installed rimuru to ${NC}$installDir"
 }
 
 if (-not [string]::IsNullOrEmpty($binary)) {
-  Copy-Item -Path $binary -Destination "$installDir\rimuru-ai.exe" -Force
+  Copy-Item -Path $binary -Destination "$installDir\rimuru.exe" -Force
   Write-Message "info" "${MUTED}Installed rimuru from ${NC}$binary"
 } else {
   Install-Binary
@@ -172,10 +175,12 @@ if (-not (Test-Path "$configDir\agents") -or -not (Get-ChildItem "$configDir\age
 }
 
 Write-Host ""
-Write-Message "info" "${MUTED}                   ${NC}             ▄     "
-Write-Message "info" "${MUTED}█▀▀█ █▀▀█ █▀▀█ █▀▀▄ ${NC}█▀▀▀ █▀▀█ █▀▀█ █▀▀█"
-Write-Message "info" "${MUTED}█░░█ █░░█ █▀▀▀ █░░█ ${NC}█░░░ █░░█ █░░█ █▀▀▀"
-Write-Message "info" "${MUTED}▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ${NC}▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"
+Write-Message "info" "${MUTED}██████╗ ██╗███╗   ███╗██╗   ██╗██████╗ ██╗   ██╗${NC}"
+Write-Message "info" "${MUTED}██╔══██╗██║████╗ ████║██║   ██║██╔══██╗██║   ██║${NC}"
+Write-Message "info" "${MUTED}██████╔╝██║██╔████╔██║██║   ██║██████╔╝██║   ██║${NC}"
+Write-Message "info" "${MUTED}██╔══██╗██║██║╚██╔╝██║██║   ██║██╔══██╗██║   ██║${NC}"
+Write-Message "info" "${MUTED}██║  ██║██║██║ ╚═╝ ██║╚██████╔╝██║  ██║╚██████╔╝${NC}"
+Write-Message "info" "${MUTED}╚═╝  ╚═╝╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ${NC}"
 Write-Host ""
 Write-Host ""
 Write-Message "info" "${MUTED}Rimuru AI includes free models, to start:${NC}"

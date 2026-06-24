@@ -7,10 +7,6 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$MUTED = "`e[0;2m"
-$RED = "`e[0;31m"
-$ORANGE = "`e[38;5;214m"
-$NC = "`e[0m"
 
 $app = "rimuru"
 $installDir = "$HOME\.rimuru\bin"
@@ -18,12 +14,12 @@ $null = New-Item -ItemType Directory -Force -Path $installDir
 
 function Write-Message {
   param([string]$level, [string]$message)
-  $color = switch ($level) {
-    "error" { $RED }
-    "warning" { $ORANGE }
-    default { $NC }
+  switch ($level) {
+    "error"   { Write-Host $message -ForegroundColor Red }
+    "warning" { Write-Host $message -ForegroundColor DarkYellow }
+    "muted"   { Write-Host $message -ForegroundColor DarkGray }
+    default   { Write-Host $message -ForegroundColor DarkGray }
   }
-  Write-Host "$color$message$NC"
 }
 
 function Get-Arch {
@@ -66,7 +62,7 @@ if (-not [string]::IsNullOrEmpty($binary)) {
 } else {
   if ([string]::IsNullOrEmpty($version)) {
     $releaseUrl = "https://api.github.com/repos/$repo/releases/latest"
-    Write-Message "info" "${MUTED}Fetching latest release...${NC}"
+    Write-Message "info" "Fetching latest release..."
     try {
       $response = Invoke-RestMethod -Uri $releaseUrl -UseBasicParsing
       $specificVersion = $response.tag_name -replace "^v", ""
@@ -80,7 +76,7 @@ if (-not [string]::IsNullOrEmpty($binary)) {
     $httpStatus = try { (Invoke-WebRequest -Uri $tagUrl -UseBasicParsing -Method Head).StatusCode } catch { 404 }
     if ($httpStatus -eq 404) {
       Write-Message "error" "Release v${specificVersion} not found"
-      Write-Message "info" "${MUTED}Available releases: https://github.com/$repo/releases${NC}"
+      Write-Message "info" "Available releases: https://github.com/$repo/releases"
       exit 1
     }
   }
@@ -95,10 +91,10 @@ if (-not $rimuruPath) {
 if ($rimuruPath) {
   $installedVersion = & rimuru --version 2>$null
   if ($installedVersion -eq $specificVersion) {
-    Write-Message "info" "${MUTED}Version ${NC}$specificVersion${MUTED} already installed${NC}"
+    Write-Host "Version $specificVersion already installed"
     exit 0
   }
-  Write-Message "info" "${MUTED}Installed version: ${NC}$installedVersion"
+  Write-Message "info" "Installed version: $installedVersion"
 }
 
 function Install-Binary {
@@ -106,7 +102,7 @@ function Install-Binary {
   New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
   $zipPath = Join-Path $tmpDir $filename
 
-  Write-Message "info" "${MUTED}Installing ${NC}rimuru ${MUTED}version: ${NC}$specificVersion"
+  Write-Host "Installing rimuru version: $specificVersion"
 
   try {
     $downloadUrl = $url
@@ -115,8 +111,8 @@ function Install-Binary {
     Write-Progress -Activity "Downloading rimuru" -Completed
   } catch {
     Write-Message "error" "Failed to download binary from GitHub Releases."
-    Write-Message "info" "${MUTED}The binary for your platform ($target) may not be available yet.${NC}"
-    Write-Message "info" "${MUTED}Check https://github.com/$repo/releases for available assets${NC}"
+    Write-Message "muted" "The binary for your platform ($target) may not be available yet."
+    Write-Message "muted" "Check https://github.com/$repo/releases for available assets"
     exit 1
   }
 
@@ -128,15 +124,14 @@ function Install-Binary {
   if (-not (Test-Path $exePath)) {
     $exePath = Get-ChildItem -Path $tmpDir -Recurse -Filter "rimuru*" | Select-Object -First 1 -ExpandProperty FullName
   }
-  Remove-Item -Path "$installDir\rimuru.exe" -Force -ErrorAction SilentlyContinue
-  Move-Item -Path $exePath -Destination "$installDir\rimuru.exe" -Force
+  Copy-Item -Path $exePath -Destination "$installDir\rimuru.exe" -Force
   Remove-Item -Path $tmpDir -Recurse -Force
-  Write-Message "info" "${MUTED}Installed rimuru to ${NC}$installDir"
+  Write-Host "Installed rimuru to: $installDir"
 }
 
 if (-not [string]::IsNullOrEmpty($binary)) {
   Copy-Item -Path $binary -Destination "$installDir\rimuru.exe" -Force
-  Write-Message "info" "${MUTED}Installed rimuru from ${NC}$binary"
+  Write-Host "Installed rimuru from: $binary"
 } else {
   Install-Binary
 }
@@ -148,8 +143,8 @@ if (-not $noModifyPath) {
     $newPath = "$installDir;$userPath"
     [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
     $env:PATH = "$installDir;$env:PATH"
-    Write-Message "info" "${MUTED}Added rimuru to PATH (user-level)${NC}"
-    Write-Message "warning" "${ORANGE}Restart your terminal or run:${NC}"
+    Write-Message "muted" "Added rimuru to PATH (user-level)"
+    Write-Message "warning" "Restart your terminal or run:"
     Write-Host "  `$env:PATH = `"$installDir;`$env:PATH`""
   }
 }
@@ -157,7 +152,7 @@ if (-not $noModifyPath) {
 # Install configs
 $configDir = "$HOME\.config\rimuru"
 if (-not (Test-Path "$configDir\agents") -or -not (Get-ChildItem "$configDir\agents" -ErrorAction SilentlyContinue)) {
-  Write-Message "info" "${MUTED}Downloading default configs...${NC}"
+  Write-Host "Downloading default configs..."
   $configUrl = "https://raw.githubusercontent.com/$repo/main/rimuru-configs.tar.gz"
   $tmpDir = Join-Path $env:TEMP "rimuru_config_$PID"
   New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
@@ -171,24 +166,23 @@ if (-not (Test-Path "$configDir\agents") -or -not (Get-ChildItem "$configDir\age
       }
     }
     Remove-Item -Path $tmpDir -Recurse -Force
-    Write-Message "info" "${MUTED}Configs installed to ${NC}$configDir"
+    Write-Host "Configs installed to: $configDir"
   } catch {
     Write-Message "warning" "Could not download default configs. Run rimuru to create defaults."
   }
 }
 
 Write-Host ""
-Write-Message "info" "${MUTED}██████╗ ██╗███╗   ███╗██╗   ██╗██████╗ ██╗   ██╗${NC}"
-Write-Message "info" "${MUTED}██╔══██╗██║████╗ ████║██║   ██║██╔══██╗██║   ██║${NC}"
-Write-Message "info" "${MUTED}██████╔╝██║██╔████╔██║██║   ██║██████╔╝██║   ██║${NC}"
-Write-Message "info" "${MUTED}██╔══██╗██║██║╚██╔╝██║██║   ██║██╔══██╗██║   ██║${NC}"
-Write-Message "info" "${MUTED}██║  ██║██║██║ ╚═╝ ██║╚██████╔╝██║  ██║╚██████╔╝${NC}"
-Write-Message "info" "${MUTED}╚═╝  ╚═╝╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ${NC}"
+Write-Host "  ██████╗ ██╗███╗   ███╗██╗   ██╗██████╗ ██╗   ██╗" -ForegroundColor DarkGray
+Write-Host "  ██╔══██╗██║████╗ ████║██║   ██║██╔══██╗██║   ██║" -ForegroundColor DarkGray
+Write-Host "  ██████╔╝██║██╔████╔██║██║   ██║██████╔╝██║   ██║" -ForegroundColor DarkGray
+Write-Host "  ██╔══██╗██║██║╚██╔╝██║██║   ██║██╔══██╗██║   ██║" -ForegroundColor DarkGray
+Write-Host "  ██║  ██║██║██║ ╚═╝ ██║╚██████╔╝██║  ██║╚██████╔╝" -ForegroundColor DarkGray
+Write-Host "  ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ " -ForegroundColor DarkGray
 Write-Host ""
+Write-Host "Rimuru AI includes free models, to start:" -ForegroundColor DarkGray
 Write-Host ""
-Write-Message "info" "${MUTED}Rimuru AI includes free models, to start:${NC}"
+Write-Host "cd <project>  # Open directory"
+Write-Host "rimuru        # Run command"
 Write-Host ""
-Write-Message "info" "cd <project>  ${MUTED}# Open directory${NC}"
-Write-Message "info" "rimuru        ${MUTED}# Run command${NC}"
-Write-Host ""
-Write-Message "info" "${MUTED}For more information visit ${NC}https://rimurucode.vercel.app"
+Write-Host "For more information visit https://rimurucode.vercel.app" -ForegroundColor DarkGray

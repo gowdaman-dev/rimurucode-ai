@@ -124,9 +124,11 @@ function Install-Binary {
   if (-not (Test-Path $exePath)) {
     $exePath = Get-ChildItem -Path $tmpDir -Recurse -Filter "rimuru*" | Select-Object -First 1 -ExpandProperty FullName
   }
-  # Stop any running rimuru process to avoid file lock
-  Get-Process "rimuru" -ErrorAction SilentlyContinue | Stop-Process -Force
-  Copy-Item -Path $exePath -Destination "$installDir\rimuru.exe" -Force
+  # Clean up any leftover old binary, then rename the running exe
+  # (Windows allows renaming in-use files but not overwriting them)
+  Remove-Item -Path "$installDir\rimuru.exe.old" -Force -ErrorAction SilentlyContinue
+  Rename-Item -Path "$installDir\rimuru.exe" -NewName "rimuru.exe.old" -Force -ErrorAction SilentlyContinue
+  Copy-Item -Path $exePath -Destination "$installDir\rimuru.exe"
   Remove-Item -Path $tmpDir -Recurse -Force
   Write-Host "Installed rimuru to: $installDir"
 }

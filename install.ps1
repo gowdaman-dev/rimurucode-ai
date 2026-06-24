@@ -148,6 +148,8 @@ if (-not $noModifyPath) {
     [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
     $env:PATH = "$installDir;$env:PATH"
     Write-Message "info" "${MUTED}Added rimuru to PATH (user-level)${NC}"
+    Write-Message "warning" "${ORANGE}Restart your terminal or run:${NC}"
+    Write-Host "  `$env:PATH = `"$installDir;`$env:PATH`""
   }
 }
 

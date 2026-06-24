@@ -129,7 +129,7 @@ function Install-Binary {
     $exePath = Get-ChildItem -Path $tmpDir -Recurse -Filter "rimuru*" | Select-Object -First 1 -ExpandProperty FullName
   }
   Remove-Item -Path "$installDir\rimuru.exe" -Force -ErrorAction SilentlyContinue
-  Move-Item -Path $exePath -Destination "$installDir\rimuru.exe"
+  Move-Item -Path $exePath -Destination "$installDir\rimuru.exe" -Force
   Remove-Item -Path $tmpDir -Recurse -Force
   Write-Message "info" "${MUTED}Installed rimuru to ${NC}$installDir"
 }
